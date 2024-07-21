@@ -17,7 +17,7 @@
     "symfony/translation": "^3.4",
     "symfony/swiftmailer-bundle": "^2.3",
     "ramsey/uuid": "~3.9.3",
-    "pelago/emogrifier": "^7.2"
+    "pelago/emogrifier": "^6.0"
   },
   "require-dev": {
     "stof/doctrine-extensions-bundle": "^1.2"
