@@ -1,0 +1,25 @@
+{
+  "name": "druidvav/email-bundle",
+  "type": "symfony-bundle",
+  "keywords": ["swiftmailer", "email", "symfony3"],
+  "license": "MIT",
+  "description": "Simple email notifications bundle for Symfony2.",
+  "homepage": "https://github.com/ragephp/notification-bundle",
+  "autoload": {
+    "psr-4": { "": "src/" }
+  },
+  "require": {
+    "php": ">=7.4.0",
+    "symfony/framework-bundle": "^3.4",
+    "symfony/event-dispatcher": "^3.4",
+    "symfony/templating": "^3.4",
+    "symfony/twig-bundle": "^3.4",
+    "symfony/translation": "^3.4",
+    "symfony/swiftmailer-bundle": "^2.3",
+    "ramsey/uuid": "~3.9.3",
+    "pelago/emogrifier": "^7.2"
+  },
+  "require-dev": {
+    "stof/doctrine-extensions-bundle": "^1.2"
+  }
+}
