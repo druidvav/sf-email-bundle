@@ -5,6 +5,7 @@ use Gedmo\Translatable\TranslatableListener;
 use Druidvav\DvEmailBundle\Event\RenderEvent;
 use Symfony\Component\DependencyInjection\ContainerAwareInterface;
 use Symfony\Component\DependencyInjection\ContainerAwareTrait;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Routing\RequestContext;
 use Symfony\Component\Translation\TranslatorInterface;
 
@@ -16,12 +17,14 @@ class EmailListener implements ContainerAwareInterface
     protected array $localeConfig = [ ];
 
     protected RequestContext $requestContext;
+    protected ?RequestStack $requestStack;
     protected TranslatorInterface $translator;
     protected ?TranslatableListener $gedmoTranslatable;
 
-    public function __construct(RequestContext $requestContext, TranslatorInterface $translator, TranslatableListener $gedmoTranslatable = null)
+    public function __construct(RequestContext $requestContext, ?RequestStack $requestStack, TranslatorInterface $translator, TranslatableListener $gedmoTranslatable = null)
     {
         $this->requestContext = $requestContext;
+        $this->requestStack = $requestStack;
         $this->translator = $translator;
         $this->gedmoTranslatable = $gedmoTranslatable;
     }
@@ -58,8 +61,12 @@ class EmailListener implements ContainerAwareInterface
     {
         $this->requestContext
             ->setScheme($config['scheme'])->setHost($config['host'])
-            ->setHttpPort($config['httpPort'])->setHttpsPort($config['httpsPort']);
+            ->setHttpPort($config['httpPort'])->setHttpsPort($config['httpsPort'])
+            ->setParameter('_locale', $config['locale']);
         $this->translator->setLocale($config['locale']);
+        if ($this->requestStack && $this->requestStack->getCurrentRequest()) {
+            $this->requestStack->getCurrentRequest()->setLocale($config['locale']);
+        }
         if (!empty($this->gedmoTranslatable)) {
             $this->gedmoTranslatable->setTranslatableLocale($config['locale']);
         }
