@@ -2,21 +2,25 @@
 namespace Druidvav\DvEmailBundle;
 
 use Druidvav\DvEmailBundle\Message\Message;
-use Symfony\Component\DependencyInjection\ContainerAwareTrait;
+use Psr\Container\ContainerInterface;
 
 trait DvEmailAwareTrait
 {
-    use ContainerAwareTrait;
+    protected ContainerInterface $dvEmailLocator;
+
+    public function setDvEmailLocator(ContainerInterface $locator): void
+    {
+        $this->dvEmailLocator = $locator;
+    }
 
     protected function getDefaultMessage(): string { return 'default'; }
 
-    /** @noinspection PhpIncompatibleReturnTypeInspection */
     protected function createMessage(): Message
     {
-        return $this->container->get('rage_email.' . $this->getDefaultMessage() . '.message');
+        return $this->dvEmailLocator->get($this->getDefaultMessage());
     }
 
-    protected function createMessageForUser(UserInterface $user, $template = null, array $vars = [ ]): Message
+    protected function createMessageForUser(UserInterface $user, $template = null, array $vars = []): Message
     {
         return $this->createMessage()->createForUser($user, $template, $vars);
     }

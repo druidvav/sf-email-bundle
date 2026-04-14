@@ -6,8 +6,10 @@ use Druidvav\DvEmailBundle\Message\Config;
 use Druidvav\DvEmailBundle\Message\Message;
 use Druidvav\DvEmailBundle\Message\Sender;
 use Druidvav\DvEmailBundle\Swift\SmtpTransport;
+use Symfony\Component\DependencyInjection\Argument\ServiceClosureArgument;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\DependencyInjection\ServiceLocator;
 use Symfony\Component\HttpKernel\DependencyInjection\Extension;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Reference;
@@ -29,10 +31,12 @@ class DvEmailExtension extends Extension
         foreach ($config['sender'] as $alias => $options) {
             $this->registerSender($container, $alias, $options);
         }
+        $messageAliases = array_keys($config['message']);
         foreach ($config['message'] as $alias => $options) {
             $this->registerConfig($container, $alias, $options);
             $this->registerMessage($container, $alias, array_keys($config['sender']));
         }
+        $this->registerRegistry($container, $messageAliases);
         if (!empty($config['locale'])) {
             $this->registerLocaleListener($container, $config['locale']);
         }
@@ -94,6 +98,18 @@ class DvEmailExtension extends Extension
         if ($alias === 'default') {
             $container->setAlias('rage_email.message', $optionId);
         }
+    }
+
+    protected function registerRegistry(ContainerBuilder $container, array $messageAliases)
+    {
+        $locatorServices = [];
+        foreach ($messageAliases as $alias) {
+            $locatorServices[$alias] = new ServiceClosureArgument(new Reference(sprintf('rage_email.%s.message', $alias)));
+        }
+        $locatorDef = new Definition(ServiceLocator::class, [$locatorServices]);
+        $locatorDef->addTag('container.service_locator');
+        $locatorDef->setPublic(true);
+        $container->setDefinition('rage_email.locator', $locatorDef);
     }
 
     protected function registerLocaleListener(ContainerBuilder $container, $config)
