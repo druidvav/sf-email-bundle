@@ -55,9 +55,7 @@ class DvEmailExtension extends Extension
         $optionId = sprintf('rage_email.%s.config', $alias);
         $optionDef = new Definition($container->getParameter('rage_email.config.class'));
         // Dependency references
-        $optionDef->addMethodCall('setTemplateEngine', [ new Reference('templating') ]);
-        $optionDef->addMethodCall('setTemplateLocator', [ new Reference('templating.locator') ]);
-        $optionDef->addMethodCall('setTemplateNameParser', [ new Reference('templating.name_parser') ]);
+        $optionDef->addMethodCall('setTwig', [ new Reference('twig') ]);
         $optionDef->addMethodCall('setCachePath', [ $container->getParameter('kernel.cache_dir') ]);
         // Options
         $optionDef->addMethodCall('setTemplatePath', [ $options['template_path'] ]);

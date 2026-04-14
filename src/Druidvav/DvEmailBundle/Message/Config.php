@@ -3,15 +3,11 @@ namespace Druidvav\DvEmailBundle\Message;
 
 use InvalidArgumentException;
 use Druidvav\DvEmailBundle\Exception\TemplateNotFoundException;
-use Symfony\Bundle\FrameworkBundle\Templating\Loader\TemplateLocator;
-use Symfony\Bundle\FrameworkBundle\Templating\TemplateNameParser;
-use Symfony\Component\Templating\EngineInterface;
+use Twig\Environment;
 
 class Config
 {
-    protected EngineInterface $tplEngine;
-    protected TemplateLocator $tplLocator;
-    protected TemplateNameParser $tplNameParser;
+    protected Environment $twig;
 
     protected $cachePath;
     protected $templatePath;
@@ -21,10 +17,8 @@ class Config
     protected $from;
     protected $replyTo;
     protected $embedImages = false;
-    
-    public function setTemplateEngine(EngineInterface $engine) { $this->tplEngine = $engine; }
-    public function setTemplateLocator(TemplateLocator $locator) { $this->tplLocator = $locator; }
-    public function setTemplateNameParser(TemplateNameParser $nameParser) { $this->tplNameParser = $nameParser; }
+
+    public function setTwig(Environment $twig) { $this->twig = $twig; }
     public function setTemplatePath($templatePath) { $this->templatePath = $templatePath; }
     public function setCacheInlinedCSS($value) { $this->cacheInlinedCSS = $value; }
     public function setCachePath($cachePath) { $this->cachePath = $cachePath; }
@@ -51,7 +45,7 @@ class Config
     public function getPlainTextBodyTemplatePath(Message $message): ?string
     {
         $template = $this->templatePath . '/' . $message->getTemplate() . '/email.txt.twig';
-        return $this->tplEngine->exists($template) ? $template : null;
+        return $this->twig->getLoader()->exists($template) ? $template : null;
     }
 
     public function getHtmlBodyTemplatePath(Message $message): string
@@ -69,9 +63,9 @@ class Config
         }
     }
 
-    public function getTemplate($template)
+    public function getTemplate($template): string
     {
-        return file_get_contents($this->tplLocator->locate($this->tplNameParser->parse($template)));
+        return $this->twig->getLoader()->getSourceContext($template)->getCode();
     }
 
     /**
@@ -80,7 +74,10 @@ class Config
     public function render($template, $vars): string
     {
         try {
-            return $this->tplEngine->render($template, $vars);
+            if (file_exists($template)) {
+                return $this->twig->createTemplate(file_get_contents($template))->render($vars);
+            }
+            return $this->twig->render($template, $vars);
         } catch (InvalidArgumentException $e) {
             throw new TemplateNotFoundException($template, 0, $e);
         }
