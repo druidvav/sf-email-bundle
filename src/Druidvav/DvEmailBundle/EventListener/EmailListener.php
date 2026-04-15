@@ -3,16 +3,12 @@ namespace Druidvav\DvEmailBundle\EventListener;
 
 use Gedmo\Translatable\TranslatableListener;
 use Druidvav\DvEmailBundle\Event\RenderEvent;
-use Symfony\Component\DependencyInjection\ContainerAwareInterface;
-use Symfony\Component\DependencyInjection\ContainerAwareTrait;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Routing\RequestContext;
-use Symfony\Component\Translation\TranslatorInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
-class EmailListener implements ContainerAwareInterface
+class EmailListener
 {
-    use ContainerAwareTrait;
-
     protected ?array $oldLocaleState = null;
     protected array $localeConfig = [ ];
 

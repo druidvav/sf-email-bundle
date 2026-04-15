@@ -27,7 +27,7 @@ class Sender
      */
     public function send(Message $message): Sender
     {
-        $this->eventDispatcher->dispatch(DvEmailEvent::BEFORE_SEND, new SendEvent($message));
+        $this->eventDispatcher->dispatch(new SendEvent($message), DvEmailEvent::BEFORE_SEND);
         try {
             $this->internalSend($this->mailer, $message);
         } catch (Swift_TransportException $exception) {
@@ -59,7 +59,7 @@ class Sender
                 $server = null;
                 $eximId = null;
             }
-            $this->eventDispatcher->dispatch(DvEmailEvent::AFTER_SEND, new SendEvent($message, $server, $eximId));
+            $this->eventDispatcher->dispatch(new SendEvent($message, $server, $eximId), DvEmailEvent::AFTER_SEND);
         } catch (Swift_TransportException $exception) {
             $transport->stop();
             throw $exception;

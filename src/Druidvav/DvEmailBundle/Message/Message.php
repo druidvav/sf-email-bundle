@@ -110,11 +110,11 @@ class Message
     public function render(): Message
     {
         if (empty($this->rendered)) {
-            $this->eventDispatcher->dispatch(DvEmailEvent::BEFORE_RENDER_HTML, new RenderEvent($this));
+            $this->eventDispatcher->dispatch(new RenderEvent($this), DvEmailEvent::BEFORE_RENDER_HTML);
             $this->renderSubject();
             $this->renderPlainTextBody();
             $this->renderHtmlBody();
-            $this->eventDispatcher->dispatch(DvEmailEvent::AFTER_RENDER_HTML, new RenderEvent($this));
+            $this->eventDispatcher->dispatch(new RenderEvent($this), DvEmailEvent::AFTER_RENDER_HTML);
             $this->rendered = true;
         } else {
             throw new Exception('Message is already rendered');

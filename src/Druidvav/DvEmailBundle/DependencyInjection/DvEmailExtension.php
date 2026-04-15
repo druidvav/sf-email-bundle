@@ -120,7 +120,6 @@ class DvEmailExtension extends Extension
         $optionDef->addArgument(new Reference('request_stack'));
         $optionDef->addArgument(new Reference('translator'));
         $optionDef->addArgument(new Reference('stof_doctrine_extensions.listener.translatable', ContainerInterface::NULL_ON_INVALID_REFERENCE));
-        $optionDef->addMethodCall('setContainer', [ new Reference('service_container') ]);
         $optionDef->addMethodCall('setLocaleConfig', [ $container->getParameter('rage_email.locale_config') ]);
         $optionDef->addTag('kernel.event_listener', [ 'event' => 'rage_email.before_render_html', 'method' => 'onBeforeRenderHTML', 'priority' => 10 ]);
         $optionDef->addTag('kernel.event_listener', [ 'event' => 'rage_email.after_render_html', 'method' => 'onAfterRenderHTML', 'priority' => -10 ]);

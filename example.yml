@@ -2,27 +2,19 @@ rage_email:
     message:
         default:
             domain: "%router.request_context.host%"
-            # Symfony 3: template_path: GdePosylkaBundle::Email
-            # Symfony 4: template_path: "@GdePosylka/Email"
-            template_path: GdePosylkaBundle::Email
-            # Symfony 3: css_file: "%kernel.root_dir%/../web/css/email.css"
-            # Symfony 4: css_file: "%kernel.project_dir%/public/css/email.css"
-            css_file: "%kernel.root_dir%/../web/css/email.css"
+            template_path: "@GdePosylka/Email"
+            css_file: "%kernel.project_dir%/public/css/email.css"
             from: "%mailer_from%"
             reply_to: "%mailer_replyto%"
         user:
             domain: "%router.request_context.host%"
-            # Symfony 3: template_path: GpUserBundle::Email
-            # Symfony 4: template_path: "@GpUser/Email"
-            template_path: GpUserBundle::Email
-            # Symfony 3: css_file: "%kernel.root_dir%/../web/css/email.css"
-            # Symfony 4: css_file: "%kernel.project_dir%/public/css/email.css"
-            css_file: "%kernel.root_dir%/../web/css/email.css"
+            template_path: "@GpUser/Email"
+            css_file: "%kernel.project_dir%/public/css/email.css"
             from: "%mailer_from%"
             reply_to: "%mailer_replyto%"
 #            embed_images:
 #                url: "http://gdeposylka.ru/img/" # website root
-#                path: "%kernel.root_dir%/../web/img/" # real path
+#                path: "%kernel.project_dir%/public/img/" # real path
     sender:
         default:
             mailer: swiftmailer.mailer.primary
