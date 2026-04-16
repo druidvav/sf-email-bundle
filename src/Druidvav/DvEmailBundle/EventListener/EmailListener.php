@@ -2,7 +2,8 @@
 namespace Druidvav\DvEmailBundle\EventListener;
 
 use Gedmo\Translatable\TranslatableListener;
-use Druidvav\DvEmailBundle\Event\RenderEvent;
+use Druidvav\DvEmailBundle\Event\AfterRenderHtmlEvent;
+use Druidvav\DvEmailBundle\Event\BeforeRenderHtmlEvent;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Routing\RequestContext;
 use Symfony\Contracts\Translation\TranslatorInterface;
@@ -32,7 +33,7 @@ class EmailListener
     }
 
     /** @noinspection PhpUnused */
-    public function onBeforeRenderHTML(RenderEvent $event)
+    public function onBeforeRenderHTML(BeforeRenderHtmlEvent $event)
     {
         $locale = $event->getMessage()->getLocale();
         $this->oldLocaleState = [
@@ -46,7 +47,7 @@ class EmailListener
     }
 
     /** @noinspection PhpUnused */
-    public function onAfterRenderHTML(RenderEvent $event)
+    public function onAfterRenderHTML(AfterRenderHtmlEvent $event)
     {
         $old = $this->oldLocaleState;
         if (!empty($old)) $this->applyConfig($old);

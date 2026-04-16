@@ -1,11 +1,12 @@
 <?php
 namespace Druidvav\DvEmailBundle\DependencyInjection;
 
+use Druidvav\DvEmailBundle\Event\AfterRenderHtmlEvent;
+use Druidvav\DvEmailBundle\Event\BeforeRenderHtmlEvent;
 use Druidvav\DvEmailBundle\EventListener\EmailListener;
 use Druidvav\DvEmailBundle\Message\Config;
 use Druidvav\DvEmailBundle\Message\Message;
 use Druidvav\DvEmailBundle\Message\Sender;
-use Druidvav\DvEmailBundle\Swift\SmtpTransport;
 use Symfony\Component\DependencyInjection\Argument\ServiceClosureArgument;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -16,13 +17,17 @@ use Symfony\Component\DependencyInjection\Reference;
 
 class DvEmailExtension extends Extension
 {
+    public function getAlias(): string
+    {
+        return 'dv_email';
+    }
+
     public function load(array $configs, ContainerBuilder $container)
     {
-        $container->setParameter('rage_email.sender.class', Sender::class);
-        $container->setParameter('rage_email.config.class', Config::class);
-        $container->setParameter('rage_email.message.class', Message::class);
-        $container->setParameter('rage_email.locale_listener.class', EmailListener::class);
-        $container->setParameter('rage_email.transport.smtp.class', SmtpTransport::class);
+        $container->setParameter('dv_email.sender.class', Sender::class);
+        $container->setParameter('dv_email.config.class', Config::class);
+        $container->setParameter('dv_email.message.class', Message::class);
+        $container->setParameter('dv_email.locale_listener.class', EmailListener::class);
 
         $config = array();
         foreach ($configs as $subConfig) {
@@ -44,20 +49,17 @@ class DvEmailExtension extends Extension
 
     protected function registerSender(ContainerBuilder $container, $alias, $options)
     {
-        $optionId = sprintf('rage_email.%s.sender', $alias);
-        $optionDef = new Definition($container->getParameter('rage_email.sender.class'));
+        $optionId = sprintf('dv_email.%s.sender', $alias);
+        $optionDef = new Definition($container->getParameter('dv_email.sender.class'));
         $optionDef->addMethodCall('setEventDispatcher', [ new Reference('event_dispatcher') ]);
-        $optionDef->addMethodCall('setPrimaryMailer', [ new Reference(!empty($options['mailer']) ? $options['mailer'] : 'mailer') ]);
-        if (!empty($options['mailer_fallback'])) {
-            $optionDef->addMethodCall('setFallbackMailer', [ new Reference($options['mailer_fallback']) ]);
-        }
+        $optionDef->addMethodCall('setMailer', [ new Reference(!empty($options['mailer']) ? $options['mailer'] : 'mailer') ]);
         $container->setDefinition($optionId, $optionDef);
     }
 
     protected function registerConfig(ContainerBuilder $container, $alias, $options)
     {
-        $optionId = sprintf('rage_email.%s.config', $alias);
-        $optionDef = new Definition($container->getParameter('rage_email.config.class'));
+        $optionId = sprintf('dv_email.%s.config', $alias);
+        $optionDef = new Definition($container->getParameter('dv_email.config.class'));
         // Dependency references
         $optionDef->addMethodCall('setTwig', [ new Reference('twig') ]);
         $optionDef->addMethodCall('setCachePath', [ $container->getParameter('kernel.cache_dir') ]);
@@ -86,17 +88,17 @@ class DvEmailExtension extends Extension
 
     protected function registerMessage(ContainerBuilder $container, $alias, $senders)
     {
-        $optionId = sprintf('rage_email.%s.message', $alias);
-        $optionDef = new Definition($container->getParameter('rage_email.message.class'));
+        $optionId = sprintf('dv_email.%s.message', $alias);
+        $optionDef = new Definition($container->getParameter('dv_email.message.class'));
         $optionDef->setShared(false);
         $optionDef->addMethodCall('setEventDispatcher', [ new Reference('event_dispatcher') ]);
-        $optionDef->addMethodCall('setConfig', [ new Reference(sprintf('rage_email.%s.config', $alias)) ]);
+        $optionDef->addMethodCall('setConfig', [ new Reference(sprintf('dv_email.%s.config', $alias)) ]);
         foreach ($senders as $sender) {
-            $optionDef->addMethodCall('addSender', [ $sender, new Reference(sprintf('rage_email.%s.sender', $sender)) ]);
+            $optionDef->addMethodCall('addSender', [ $sender, new Reference(sprintf('dv_email.%s.sender', $sender)) ]);
         }
         $container->setDefinition($optionId, $optionDef);
         if ($alias === 'default') {
-            $container->setAlias('rage_email.message', $optionId);
+            $container->setAlias('dv_email.message', $optionId);
         }
     }
 
@@ -104,25 +106,25 @@ class DvEmailExtension extends Extension
     {
         $locatorServices = [];
         foreach ($messageAliases as $alias) {
-            $locatorServices[$alias] = new ServiceClosureArgument(new Reference(sprintf('rage_email.%s.message', $alias)));
+            $locatorServices[$alias] = new ServiceClosureArgument(new Reference(sprintf('dv_email.%s.message', $alias)));
         }
         $locatorDef = new Definition(ServiceLocator::class, [$locatorServices]);
         $locatorDef->addTag('container.service_locator');
         $locatorDef->setPublic(true);
-        $container->setDefinition('rage_email.locator', $locatorDef);
+        $container->setDefinition('dv_email.locator', $locatorDef);
     }
 
     protected function registerLocaleListener(ContainerBuilder $container, $config)
     {
-        $container->setParameter('rage_email.locale_config', $config);
-        $optionDef = new Definition($container->getParameter('rage_email.locale_listener.class'));
+        $container->setParameter('dv_email.locale_config', $config);
+        $optionDef = new Definition($container->getParameter('dv_email.locale_listener.class'));
         $optionDef->addArgument(new Reference('router.request_context'));
         $optionDef->addArgument(new Reference('request_stack'));
         $optionDef->addArgument(new Reference('translator'));
         $optionDef->addArgument(new Reference('stof_doctrine_extensions.listener.translatable', ContainerInterface::NULL_ON_INVALID_REFERENCE));
-        $optionDef->addMethodCall('setLocaleConfig', [ $container->getParameter('rage_email.locale_config') ]);
-        $optionDef->addTag('kernel.event_listener', [ 'event' => 'rage_email.before_render_html', 'method' => 'onBeforeRenderHTML', 'priority' => 10 ]);
-        $optionDef->addTag('kernel.event_listener', [ 'event' => 'rage_email.after_render_html', 'method' => 'onAfterRenderHTML', 'priority' => -10 ]);
-        $container->setDefinition('rage_email.locale.listener', $optionDef);
+        $optionDef->addMethodCall('setLocaleConfig', [ $container->getParameter('dv_email.locale_config') ]);
+        $optionDef->addTag('kernel.event_listener', [ 'event' => BeforeRenderHtmlEvent::class, 'method' => 'onBeforeRenderHTML', 'priority' => 10 ]);
+        $optionDef->addTag('kernel.event_listener', [ 'event' => AfterRenderHtmlEvent::class, 'method' => 'onAfterRenderHTML', 'priority' => -10 ]);
+        $container->setDefinition('dv_email.locale.listener', $optionDef);
     }
 }

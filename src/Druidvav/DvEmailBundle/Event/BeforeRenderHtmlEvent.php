@@ -4,7 +4,10 @@ namespace Druidvav\DvEmailBundle\Event;
 use Druidvav\DvEmailBundle\Message\Message;
 use Symfony\Contracts\EventDispatcher\Event;
 
-class RenderEvent extends Event
+/**
+ * Диспатчится перед рендером subject / plain / HTML (Twig).
+ */
+class BeforeRenderHtmlEvent extends Event
 {
     protected Message $message;
 

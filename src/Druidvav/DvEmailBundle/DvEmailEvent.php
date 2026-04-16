@@ -1,25 +1,21 @@
 <?php
 namespace Druidvav\DvEmailBundle;
 
+use Druidvav\DvEmailBundle\Event\AfterRenderHtmlEvent;
+use Druidvav\DvEmailBundle\Event\AfterSendEvent;
+use Druidvav\DvEmailBundle\Event\BeforeRenderHtmlEvent;
+use Druidvav\DvEmailBundle\Event\BeforeSendEvent;
+
+/**
+ * Имена событий = FQCN классов событий (подписка в YAML/PHP по этим строкам или через ::class).
+ */
 final class DvEmailEvent
 {
-    /**
-     * @var string
-     */
-    const BEFORE_RENDER_HTML = 'rage_email.before_render_html';
+    public const BEFORE_RENDER_HTML = BeforeRenderHtmlEvent::class;
 
-    /**
-     * @var string
-     */
-    const AFTER_RENDER_HTML = 'rage_email.after_render_html';
+    public const AFTER_RENDER_HTML = AfterRenderHtmlEvent::class;
 
-    /**
-     * @var string
-     */
-    const BEFORE_SEND = 'rage_email.before_send';
+    public const BEFORE_SEND = BeforeSendEvent::class;
 
-    /**
-     * @var string
-     */
-    const AFTER_SEND = 'rage_email.after_send';
+    public const AFTER_SEND = AfterSendEvent::class;
 }

@@ -1,10 +1,10 @@
 {
   "name": "druidvav/email-bundle",
   "type": "symfony-bundle",
-  "keywords": ["swiftmailer", "email", "symfony4"],
+  "keywords": ["symfony-mailer", "email", "symfony4"],
   "license": "MIT",
-  "description": "Simple email notifications bundle for Symfony 4.",
-  "homepage": "https://github.com/ragephp/notification-bundle",
+  "description": "Transactional email bundle for Symfony 4 (Twig, Symfony Mailer).",
+  "homepage": "https://github.com/druidvav/email-bundle",
   "autoload": {
     "psr-4": { "": "src/" }
   },
@@ -14,7 +14,7 @@
     "symfony/event-dispatcher": "^4.4",
     "symfony/twig-bundle": "^4.4",
     "symfony/translation": "^4.4",
-    "symfony/swiftmailer-bundle": "^2.3|^3.0",
+    "symfony/mailer": "^4.4",
     "ramsey/uuid": "~3.9.3",
     "pelago/emogrifier": "^6.0"
   },

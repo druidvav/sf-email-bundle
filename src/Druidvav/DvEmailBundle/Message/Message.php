@@ -2,17 +2,15 @@
 namespace Druidvav\DvEmailBundle\Message;
 
 use Exception;
-use Druidvav\DvEmailBundle\Event\RenderEvent;
-use Druidvav\DvEmailBundle\DvEmailEvent;
+use Druidvav\DvEmailBundle\Event\AfterRenderHtmlEvent;
+use Druidvav\DvEmailBundle\Event\BeforeRenderHtmlEvent;
 use Druidvav\DvEmailBundle\UserInterface;
 use Pelago\Emogrifier\CssInliner;
 use Ramsey\Uuid\Uuid;
-use Swift_DependencyContainer;
-use Swift_Image;
-use Swift_Message;
-use Swift_RfcComplianceException;
-use Swift_TransportException;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\Mailer\Exception\TransportException;
+use Symfony\Component\Mime\Address;
+use Symfony\Component\Mime\Email;
 
 class Message
 {
@@ -110,11 +108,11 @@ class Message
     public function render(): Message
     {
         if (empty($this->rendered)) {
-            $this->eventDispatcher->dispatch(new RenderEvent($this), DvEmailEvent::BEFORE_RENDER_HTML);
+            $this->eventDispatcher->dispatch(new BeforeRenderHtmlEvent($this));
             $this->renderSubject();
             $this->renderPlainTextBody();
             $this->renderHtmlBody();
-            $this->eventDispatcher->dispatch(new RenderEvent($this), DvEmailEvent::AFTER_RENDER_HTML);
+            $this->eventDispatcher->dispatch(new AfterRenderHtmlEvent($this));
             $this->rendered = true;
         } else {
             throw new Exception('Message is already rendered');
@@ -125,8 +123,7 @@ class Message
     /**
      * @param string $alias
      * @return Message
-     * @throws Swift_RfcComplianceException
-     * @throws Swift_TransportException
+     * @throws TransportException
      */
     public function send(string $alias = 'default'): Message
     {
@@ -184,34 +181,72 @@ class Message
         }, $visualHtml);
     }
 
-    public function getSwiftMessage(): Swift_Message
+    public function getEmail(): Email
     {
-        /* @var Swift_Message $message */
-        $message = Swift_DependencyContainer::getInstance()->lookup('message.message');
-        $message->setId($this->getId() . '@' . $this->getConfig()->getDomain());
-        $message->setTo($this->getTo());
-        $message->setFrom($this->getConfig()->getFrom());
-        $message->setReplyTo($this->getConfig()->getReplyTo());
-        $message->setSubject($this->getSubject());
-        $message->getHeaders()->addTextHeader('List-id', $this->getTemplate());
+        $email = new Email();
+        $domain = $this->getConfig()->getDomain();
+        $email->getHeaders()->addIdHeader('Message-ID', $this->getId() . '@' . $domain);
+        $email->getHeaders()->addTextHeader('List-Id', $this->getTemplate());
+
+        $from = $this->addressesForMime($this->getConfig()->getFrom());
+        if ($from) {
+            $email->from(...$from);
+        }
+        $to = $this->addressesForMime($this->getTo());
+        if ($to) {
+            $email->to(...$to);
+        }
+        $replyTo = $this->addressesForMime($this->getConfig()->getReplyTo());
+        if ($replyTo) {
+            $email->replyTo(...$replyTo);
+        }
+
+        $email->subject((string) $this->getSubject());
         if ($this->isBulk) {
-            $message->getHeaders()->addTextHeader('Precedence', 'bulk');
+            $email->getHeaders()->addTextHeader('Precedence', 'bulk');
         }
         if ($this->unsubscribeUrl) {
-            $message->getHeaders()->addTextHeader('List-Unsubscribe', $this->unsubscribeUrl);
+            $email->getHeaders()->addTextHeader('List-Unsubscribe', $this->unsubscribeUrl);
         }
-        if ($this->getPlainTextBody()) {
-            $message->addPart($this->getPlainTextBody(), 'text/plain');
-        }
+
         if ($this->getConfig()->getEmbedImages()) {
-            $this->embedImages($message);
+            $this->embedImagesIntoEmail($email);
         } else {
-            $message->setBody($this->getHtmlBody(), 'text/html');
+            $plain = $this->getPlainTextBody();
+            if ($plain) {
+                $email->text($plain);
+            }
+            $email->html((string) $this->getHtmlBody());
         }
-        return $message;
+
+        return $email;
     }
 
-    protected function embedImages(Swift_Message $message): void
+    /**
+     * @param mixed $raw
+     * @return Address[]
+     */
+    protected function addressesForMime($raw): array
+    {
+        if ($raw === null || $raw === '') {
+            return [];
+        }
+        if (!is_array($raw)) {
+            return [ Address::create($raw) ];
+        }
+        $out = [];
+        foreach ($raw as $email => $name) {
+            if (is_int($email)) {
+                $out[] = Address::create($name);
+            } else {
+                $out[] = new Address($email, is_string($name) ? $name : '');
+            }
+        }
+
+        return $out;
+    }
+
+    protected function embedImagesIntoEmail(Email $email): void
     {
         $body = $this->getHtmlBody();
         $urlPrefix = $this->getConfig()->getEmbedImages()['urlPrefix'];
@@ -219,11 +254,21 @@ class Message
         if (!empty($urlPrefix)) {
             $regexp = '#[\'"](' . preg_quote($urlPrefix) . '([^\'"]+\.(gif|png|jpg|jpeg)?))[\'"]#ium';
             preg_match_all($regexp, $body, $matches, PREG_SET_ORDER);
+            $i = 0;
             foreach ($matches as $match) {
-                $embed = $message->embed(Swift_Image::fromPath($imagesPath . $match[2]));
-                $body = str_replace($match[1], $embed, $body);
+                $cidName = 'e' . $i . '_' . substr(md5($match[1]), 0, 12);
+                $path = $imagesPath . $match[2];
+                if (is_file($path)) {
+                    $email->embedFromPath($path, $cidName);
+                    $body = str_replace($match[1], 'cid:' . $cidName, $body);
+                }
+                $i++;
             }
         }
-        $message->setBody($body, 'text/html');
+        $plain = $this->getPlainTextBody();
+        if ($plain) {
+            $email->text($plain);
+        }
+        $email->html($body);
     }
 }
