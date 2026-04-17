@@ -1,24 +1,24 @@
 {
   "name": "druidvav/email-bundle",
   "type": "symfony-bundle",
-  "keywords": ["symfony-mailer", "email", "symfony4"],
+  "keywords": ["symfony-mailer", "email", "symfony4", "symfony5"],
   "license": "MIT",
-  "description": "Transactional email bundle for Symfony 4 (Twig, Symfony Mailer).",
+  "description": "Transactional email bundle for Symfony 4.4/5.4 (Twig, Symfony Mailer).",
   "homepage": "https://github.com/druidvav/email-bundle",
   "autoload": {
     "psr-4": { "": "src/" }
   },
   "require": {
     "php": ">=7.4.0",
-    "symfony/framework-bundle": "^4.4",
-    "symfony/event-dispatcher": "^4.4",
-    "symfony/twig-bundle": "^4.4",
-    "symfony/translation": "^4.4",
-    "symfony/mailer": "^4.4",
+    "symfony/framework-bundle": "^4.4 || ^5.4",
+    "symfony/event-dispatcher": "^4.4 || ^5.4",
+    "symfony/twig-bundle": "^4.4 || ^5.4",
+    "symfony/translation": "^4.4 || ^5.4",
+    "symfony/mailer": "^4.4 || ^5.4",
     "ramsey/uuid": "~3.9.3",
     "pelago/emogrifier": "^6.0"
   },
   "require-dev": {
-    "stof/doctrine-extensions-bundle": "^1.2"
+    "stof/doctrine-extensions-bundle": "^1.4"
   }
 }
