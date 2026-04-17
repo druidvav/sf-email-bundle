@@ -8,6 +8,9 @@ trait DvEmailAwareTrait
 {
     protected ContainerInterface $dvEmailLocator;
 
+    /**
+     * @required
+     */
     public function setDvEmailLocator(ContainerInterface $locator): void
     {
         $this->dvEmailLocator = $locator;

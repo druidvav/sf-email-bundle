@@ -37,6 +37,7 @@
 ## 4. Изменения в коде (breaking)
 
 - **`Sender`**: вместо `setPrimaryMailer` / `setFallbackMailer` используется только **`setMailer(MailerInterface)`**; опция конфига **`mailer_fallback`** удалена — перенесите отказоустойчивость в DSN Symfony Mailer.
+- **DI class-параметры**: параметры `dv_email.sender.class`, `dv_email.config.class`, `dv_email.message.class`, `dv_email.locale_listener.class` больше не используются. Для кастомизации переопределяйте сервисы `dv_email.<alias>.sender|config|message` и `dv_email.locale.listener` через стандартные механизмы Symfony DI (override/decorate).
 - **`Message::getSwiftMessage()`** удалён. Используйте **`Message::getEmail()`**, возвращающий `Symfony\Component\Mime\Email`.
 - Отправка идёт через **`Symfony\Component\Mailer\MailerInterface::send()`**; исключения транспорта — **`Symfony\Component\Mailer\Exception\TransportException`** (и связанные классы из компонента Mailer), а не `Swift_TransportException`.
 - События: вместо **`RenderEvent`** / **`SendEvent`** и строк вида `rage_email.before_send` — четыре класса **`BeforeRenderHtmlEvent`**, **`AfterRenderHtmlEvent`**, **`BeforeSendEvent`**, **`AfterSendEvent`** (в каждом только **`Message`**). Подписки: FQCN класса или `DvEmailEvent::BEFORE_SEND` и т.д. (константы = FQCN).

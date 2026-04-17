@@ -24,11 +24,6 @@ class DvEmailExtension extends Extension
 
     public function load(array $configs, ContainerBuilder $container)
     {
-        $container->setParameter('dv_email.sender.class', Sender::class);
-        $container->setParameter('dv_email.config.class', Config::class);
-        $container->setParameter('dv_email.message.class', Message::class);
-        $container->setParameter('dv_email.locale_listener.class', EmailListener::class);
-
         $config = array();
         foreach ($configs as $subConfig) {
             $config = array_merge($config, $subConfig);
@@ -50,7 +45,7 @@ class DvEmailExtension extends Extension
     protected function registerSender(ContainerBuilder $container, $alias, $options)
     {
         $optionId = sprintf('dv_email.%s.sender', $alias);
-        $optionDef = new Definition($container->getParameter('dv_email.sender.class'));
+        $optionDef = new Definition(Sender::class);
         $optionDef->addMethodCall('setEventDispatcher', [ new Reference('event_dispatcher') ]);
         $optionDef->addMethodCall('setMailer', [ new Reference(!empty($options['mailer']) ? $options['mailer'] : 'mailer') ]);
         $container->setDefinition($optionId, $optionDef);
@@ -59,7 +54,7 @@ class DvEmailExtension extends Extension
     protected function registerConfig(ContainerBuilder $container, $alias, $options)
     {
         $optionId = sprintf('dv_email.%s.config', $alias);
-        $optionDef = new Definition($container->getParameter('dv_email.config.class'));
+        $optionDef = new Definition(Config::class);
         // Dependency references
         $optionDef->addMethodCall('setTwig', [ new Reference('twig') ]);
         $optionDef->addMethodCall('setCachePath', [ $container->getParameter('kernel.cache_dir') ]);
@@ -89,7 +84,7 @@ class DvEmailExtension extends Extension
     protected function registerMessage(ContainerBuilder $container, $alias, $senders)
     {
         $optionId = sprintf('dv_email.%s.message', $alias);
-        $optionDef = new Definition($container->getParameter('dv_email.message.class'));
+        $optionDef = new Definition(Message::class);
         $optionDef->setShared(false);
         $optionDef->addMethodCall('setEventDispatcher', [ new Reference('event_dispatcher') ]);
         $optionDef->addMethodCall('setConfig', [ new Reference(sprintf('dv_email.%s.config', $alias)) ]);
@@ -112,12 +107,13 @@ class DvEmailExtension extends Extension
         $locatorDef->addTag('container.service_locator');
         $locatorDef->setPublic(true);
         $container->setDefinition('dv_email.locator', $locatorDef);
+        $container->registerAliasForArgument('dv_email.locator', ContainerInterface::class, 'dvEmailLocator');
     }
 
     protected function registerLocaleListener(ContainerBuilder $container, $config)
     {
         $container->setParameter('dv_email.locale_config', $config);
-        $optionDef = new Definition($container->getParameter('dv_email.locale_listener.class'));
+        $optionDef = new Definition(EmailListener::class);
         $optionDef->addArgument(new Reference('router.request_context'));
         $optionDef->addArgument(new Reference('request_stack'));
         $optionDef->addArgument(new Reference('translator'));
