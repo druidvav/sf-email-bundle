@@ -11,9 +11,9 @@ trait DvEmailAwareTrait
     /**
      * @required
      */
-    public function setDvEmailLocator(ContainerInterface $locator): void
+    public function setDvEmailLocator(ContainerInterface $dvEmailLocator): void
     {
-        $this->dvEmailLocator = $locator;
+        $this->dvEmailLocator = $dvEmailLocator;
     }
 
     protected function getDefaultMessage(): string { return 'default'; }

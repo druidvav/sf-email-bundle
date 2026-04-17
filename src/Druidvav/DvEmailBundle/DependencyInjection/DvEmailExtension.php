@@ -7,6 +7,7 @@ use Druidvav\DvEmailBundle\EventListener\EmailListener;
 use Druidvav\DvEmailBundle\Message\Config;
 use Druidvav\DvEmailBundle\Message\Message;
 use Druidvav\DvEmailBundle\Message\Sender;
+use Psr\Container\ContainerInterface as PsrContainerInterface;
 use Symfony\Component\DependencyInjection\Argument\ServiceClosureArgument;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -107,7 +108,7 @@ class DvEmailExtension extends Extension
         $locatorDef->addTag('container.service_locator');
         $locatorDef->setPublic(true);
         $container->setDefinition('dv_email.locator', $locatorDef);
-        $container->registerAliasForArgument('dv_email.locator', ContainerInterface::class, 'dvEmailLocator');
+        $container->registerAliasForArgument('dv_email.locator', PsrContainerInterface::class, 'dvEmailLocator');
     }
 
     protected function registerLocaleListener(ContainerBuilder $container, $config)
