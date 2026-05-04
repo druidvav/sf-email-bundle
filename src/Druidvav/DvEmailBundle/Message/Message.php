@@ -124,6 +124,7 @@ class Message
      * @param string $alias
      * @return Message
      * @throws TransportException
+     * @throws Exception
      */
     public function send(string $alias = 'default'): Message
     {
