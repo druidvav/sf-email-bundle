@@ -10,11 +10,11 @@
   },
   "require": {
     "php": ">=7.4.0",
-    "symfony/framework-bundle": "^4.4 || ^5.4 || ^6.4",
-    "symfony/event-dispatcher": "^4.4 || ^5.4 || ^6.4",
-    "symfony/twig-bundle": "^4.4 || ^5.4 || ^6.4",
-    "symfony/translation": "^4.4 || ^5.4 || ^6.4",
-    "symfony/mailer": "^4.4 || ^5.4 || ^6.4",
+    "symfony/framework-bundle": "^4.4 || ^5.4 || ^6.4 || ^7.0",
+    "symfony/event-dispatcher": "^4.4 || ^5.4 || ^6.4 || ^7.0",
+    "symfony/twig-bundle": "^4.4 || ^5.4 || ^6.4 || ^7.0",
+    "symfony/translation": "^4.4 || ^5.4 || ^6.4 || ^7.0",
+    "symfony/mailer": "^4.4 || ^5.4 || ^6.4 || ^7.0",
     "ramsey/uuid": "~3.9.3",
     "pelago/emogrifier": "^7.0"
   },

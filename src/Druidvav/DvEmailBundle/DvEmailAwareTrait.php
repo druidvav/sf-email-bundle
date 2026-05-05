@@ -3,14 +3,16 @@ namespace Druidvav\DvEmailBundle;
 
 use Druidvav\DvEmailBundle\Message\Message;
 use Psr\Container\ContainerInterface;
+use Symfony\Contracts\Service\Attribute\Required;
 
 trait DvEmailAwareTrait
 {
     protected ContainerInterface $dvEmailLocator;
 
     /**
-     * @required
+     * @Required
      */
+    #[Required]
     public function setDvEmailLocator(ContainerInterface $dvEmailLocator): void
     {
         $this->dvEmailLocator = $dvEmailLocator;
