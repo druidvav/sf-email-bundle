@@ -23,6 +23,9 @@ class DvEmailExtension extends Extension
         return 'dv_email';
     }
 
+    /**
+     * @return void
+     */
     public function load(array $configs, ContainerBuilder $container)
     {
         $config = array();
